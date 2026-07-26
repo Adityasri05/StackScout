@@ -83,9 +83,10 @@ router.get('/:jobId/events', (req, res, next) => {
 
     res.writeHead(200, {
       'Content-Type': 'text/event-stream',
-      'Cache-Control': 'no-cache',
+      'Cache-Control': 'no-cache, no-transform',
       'Connection': 'keep-alive',
-      'Access-Control-Allow-Origin': '*'
+      'Access-Control-Allow-Origin': '*',
+      'X-Accel-Buffering': 'no'
     });
 
     res.write('\n');
@@ -112,6 +113,9 @@ router.get('/:jobId/events', (req, res, next) => {
     // 3. Setup heartbeat to prevent socket timeouts
     const heartbeat = setInterval(() => {
       res.write(': heartbeat\n\n');
+      if (typeof (res as any).flush === 'function') {
+        (res as any).flush();
+      }
     }, 15000);
 
     // 4. Handle client connection closes

@@ -85,15 +85,30 @@ export default function LiveRun() {
       },
       (err) => {
         console.error('SSE connection drop, checking job status:', err);
-        client.getJobStatus(jobId).then((job: any) => {
-          if (job.status === 'failed') {
-            setStatus('failed');
-            setErrorMessage(job.error || 'Connection lost or background runner crashed.');
-            toast('Research pipeline execution encountered an error.', 'error');
-          }
-        }).catch(() => {
-          // ignore transient API connection drops
-        });
+        // Wait 2 seconds to give the browser's network interface time to wake up / reconnect
+        setTimeout(() => {
+          const checkStatus = (retries = 3) => {
+            client.getJobStatus(jobId)
+              .then((job: any) => {
+                if (job.status === 'failed') {
+                  setStatus('failed');
+                  setErrorMessage(job.error || 'Connection lost or background runner crashed.');
+                  toast('Research pipeline execution encountered an error.', 'error');
+                } else if (job.status === 'done') {
+                  setStatus('done');
+                  setReportId(job.reportId || null);
+                  toast('Autonomous research complete!', 'success');
+                }
+              })
+              .catch((fetchErr) => {
+                console.warn(`Transient error checking job status, retries left: ${retries}`, fetchErr);
+                if (retries > 0) {
+                  setTimeout(() => checkStatus(retries - 1), 3000);
+                }
+              });
+          };
+          checkStatus();
+        }, 2000);
       }
     );
 

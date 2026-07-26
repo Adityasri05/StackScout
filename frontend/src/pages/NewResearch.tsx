@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Search, Sparkles, ChevronDown, ChevronUp, Clock, Trash2, ArrowRight, Compass, Database, FileSpreadsheet, CheckCircle, Cpu, Network, Zap, TrendingUp, ShieldAlert, Award } from 'lucide-react';
+import { Search, Sparkles, ChevronDown, ChevronUp, Clock, Trash2, ArrowRight, Compass, Database, FileSpreadsheet, CheckCircle, Cpu, Network, Zap, Award } from 'lucide-react';
 import * as client from '../api/client.js';
 import { useToast } from '../components/ToastContext.js';
 import { CardSkeleton } from '../components/Skeleton.js';
@@ -387,73 +387,7 @@ export default function NewResearch() {
         {/* Right Column: Donut Gauge & Vendor Match Leaderboard (1/3 width) */}
         <div className="space-y-8">
           
-          {/* Donut Gauge: Scout Quality Index */}
-          <motion.div
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.25 }}
-            className="bg-surface border border-border p-6 rounded-3xl shadow-sm space-y-6"
-          >
-            <div className="flex items-center justify-between">
-              <h3 className="text-xs font-mono uppercase text-muted tracking-wider flex items-center gap-1.5">
-                <TrendingUp size={12} className="text-accent" />
-                <span>Scout Quality Index</span>
-              </h3>
-              <div title="Crawling Quality Indicators">
-                <ShieldAlert size={14} className="text-muted/65 hover:text-text cursor-pointer transition-colors" />
-              </div>
-            </div>
 
-            {/* SVG Half Donut Arc */}
-            <div className="relative flex flex-col items-center justify-center pt-2">
-              <svg width="180" height="110" viewBox="0 0 100 60" className="w-44">
-                {/* Arc Background */}
-                <path
-                  d="M 10 50 A 40 40 0 0 1 90 50"
-                  fill="none"
-                  stroke="#E2E8F0"
-                  strokeWidth="8"
-                  strokeLinecap="round"
-                />
-                {/* Active Score Arc */}
-                <path
-                  d="M 10 50 A 40 40 0 0 1 84 25"
-                  fill="none"
-                  stroke="url(#arc-gradient)"
-                  strokeWidth="8"
-                  strokeLinecap="round"
-                  strokeDasharray="125"
-                  strokeDashoffset="25"
-                />
-                {/* Definition */}
-                <defs>
-                  <linearGradient id="arc-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stopColor="#10B981" />
-                    <stop offset="50%" stopColor="#F59E0B" />
-                    <stop offset="100%" stopColor="#F05A28" />
-                  </linearGradient>
-                </defs>
-                {/* Pointer Needle */}
-                <g transform="translate(50, 50) rotate(55)">
-                  <line x1="0" y1="0" x2="0" y2="-38" stroke="#0F172A" strokeWidth="2.5" strokeLinecap="round" />
-                  <circle cx="0" cy="0" r="4" fill="#0F172A" />
-                </g>
-              </svg>
-
-              {/* Big Center Score */}
-              <div className="absolute bottom-2 text-center">
-                <span className="text-3xl font-black text-text font-mono">82</span>
-                <span className="block text-[10px] text-emerald-500 font-bold uppercase tracking-wider mt-0.5">High Quality</span>
-              </div>
-            </div>
-
-            <div className="text-center border-t border-border/60 pt-4 space-y-1">
-              <p className="text-xs text-text font-semibold">Grounded validation rate is optimal</p>
-              <p className="text-[10px] text-muted leading-tight max-w-[200px] mx-auto">
-                82% of structured criteria map directly to audited public page evidence.
-              </p>
-            </div>
-          </motion.div>
 
           {/* Leaderboard: Top Match Candidates */}
           <motion.div

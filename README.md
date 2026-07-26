@@ -1,144 +1,150 @@
-# StackScout 🕵️‍♂️
+# StackScout 🕵️‍♂️ — Autonomous Software Procurement & Decision Agent
 
-**StackScout** is an autonomous software vendor research and decision-support agent. It allows users to input their software requirements in plain English (e.g., *"We're a 10-person startup and need an uptime monitoring tool under $50/month with EU data residency and Slack alerts"*), parses them into strict specifications, crawls the web for candidate vendors, extracts pricing/features directly from vendor pages, scores fit, and compiles a comprehensive McKinsey-grade comparative decision brief.
+**StackScout** is an autonomous vendor-research and decision-support agent built for the **Context.dev Challenge**. 
 
-This project was built for the **Context.dev Challenge** (Theme: *Transform unstructured public web data into structured, actionable context to solve a meaningful real-world problem*).
-
----
-
-## 🚀 Key Features
-
-- **Autonomous Agentic Pipeline**: Orchestrates a 9-stage sequence to go from plain-text requirements to comparative summaries:
-  1. `Plan`: Translates requirements into Zod-structured criteria.
-  2. `Discover`: Finds candidates via sitemaps and organic searches.
-  3. `Map`: Identifies correct pricing/feature links.
-  4. `Collect`: Scrapes vendor pages with Context.dev markdown engines.
-  5. `Extract`: Pulls structural dossiers (prices, compliance, support channels).
-  6. `Brand`: Fetches palettes and logos via brand intelligence.
-  7. `Score`: Evaluates matching features against specifications.
-  8. `Synthesize`: Drafts recommendations, tradeoffs, and a decision matrix.
-  9. `Done`: Delivers the finalised report.
-- **Price Drift & Watchlist Monitoring**: Allows users to set watches on pricing pages. The backend schedules checks (via `node-cron`) or accepts manual check triggers. It monitors for drift and shows visual before/after price changes.
-- **Ground-Truth Source Citations**: Every single pricing tier, compliance certificate, or feature claim links back to a source URL. Clicking a citation opens a right-side **Source Evidence Drawer** displaying the extracted text.
-- **Premium Hackathon-Winning UI/UX**: Includes ambient radial mesh blurs, custom dark-grid backgrounds, glowing textarea focus lines, an active scanning radar widget during pipeline execution, and smooth Framer Motion list logs and scorebar loaders.
+Describe your software needs in plain English — *"We're a 10-person startup and need an uptime monitoring tool under $50/month with EU data residency and Slack alerts"* — and StackScout dispatches an autonomous multi-stage agent pipeline that crawls public web pages, extracts structured vendor dossiers, validates feature compliance, and compiles a McKinsey-grade comparative decision brief.
 
 ---
 
-## 🛠️ Technology Stack
+## 🏛️ System Architecture & Data Flow
 
-### Backend
-- **Core**: Node.js 20+, Express 4, TypeScript
-- **Database**: SQLite (managed with `better-sqlite3` and set to WAL mode for concurrency)
-- **APIs & LLMs**: Google Gemini API via `@google/generative-ai` SDK, Context.dev Scraper API
-- **Scheduler**: `node-cron` for automated watch checks
-- **Validation**: `Zod` schemas for pipeline inputs and structured data outputs
+StackScout is built around a decoupled architecture separating a real-time event-driven Node.js backend from a reactive React single-page dashboard.
 
-### Frontend
-- **Core**: React 18, TypeScript, Vite
-- **Styling**: Tailwind CSS for custom dark theme tokens (`#0B0E14` base, `#6C7CFF` accents)
-- **Icons**: Lucide Icons
-- **Animations**: Framer Motion for premium load-in fades, radar sweeps, and scorebar fill motions
-- **State & Routing**: `react-router-dom` v6
+```mermaid
+flowchart TD
+    %% User input flow
+    A[User Request / Plain English Query] -->|POST /api/research| B[Express API Router]
+    B -->|Create Job| C[(Database Cache)]
+    B -->|Spawn Background Runner| D[Autonomous Pipeline runner]
+    
+    %% Pipeline Stages
+    subgraph Pipeline [9-Stage Research Pipeline]
+        D --> Stage1[1. Plan: LLM parses specs]
+        Stage1 --> Stage2[2. Discover: Google search / sitemaps]
+        Stage2 --> Stage3[3. Map: Filter pricing/feature links]
+        Stage3 --> Stage4[4. Collect: Context.dev crawler]
+        Stage4 --> Stage5[5. Extract: LLM parses structured dossier]
+        Stage5 --> Stage6[6. Brand: Fetch logo & colors]
+        Stage6 --> Stage7[7. Score: Compute compliance vs must-haves]
+        Stage7 --> Stage8[8. Synthesize: Final recommendation matrix]
+        Stage8 --> Stage9[9. Done: Persistence & completion]
+    end
 
----
-
-## 📦 Project Structure
-
+    %% Storage and LLM dependencies
+    Stage4 -.->|Check 1d Cache| C
+    Stage6 -.->|Check 30d Cache| C
+    Stage5 -.->|Validate Zod Schema| LLM[Gemini 2.5 Flash Lite API]
+    
+    %% SSE Logs Streaming
+    D -->|Publish PipelineEvent| Bus[Event Bus]
+    Bus -->|Server-Sent Events SSE| Front[Framer-Motion Console UI]
 ```
-d:/Dhrishti
-├── package.json         # Workspace package (concurrent dev script config)
-├── README.md            # Project documentation (this file)
-├── backend/
-│   ├── src/
-│   │   ├── db/          # SQLite connection and schema setup
-│   │   ├── events/      # EventBus for streaming execution steps
-│   │   ├── llm/         # LLM configuration (Gemini & Mock provider)
-│   │   ├── pipeline/    # 9-stage research runners & structured extractors
-│   │   ├── routes/      # Express endpoints (health, research, reports, watches)
-│   │   └── index.ts     # Main server entrypoint
-│   ├── fixtures/        # Mock scraping pages and brand palettes
-│   └── package.json
-└── frontend/
-    ├── src/
-    │   ├── api/         # API fetch services & mock generators
-    │   ├── components/  # Layouts (Sidebar, Drawer, Toast, Skeleton)
-    │   ├── pages/       # Router views (NewResearch, LiveRun, ReportDetail, Watchlist)
-    │   ├── App.tsx      # Root container and grid overlay
-    │   └── main.tsx
-    ├── tailwind.config.js
-    └── package.json
-```
+
+### 1. The 9-Stage Agent Pipeline
+*   **Plan**: Gemini translates raw request text into structured criteria specifications (Must Haves, Nice to Haves, Constraints, Budget).
+*   **Discover**: Searches the web to identify 4–6 candidate vendor domains.
+*   **Map**: Scrapes site navigation to isolate pricing and feature URLs.
+*   **Collect**: Scrapes candidate pages to Markdown using rate-limited `Context.dev` crawl endpoints.
+*   **Extract**: LLM parses scraped Markdown into structured dossiers, forcing grounded **evidence source citations** for every single data point.
+*   **Brand**: Fetches logos and primary brand palette colors.
+*   **Score**: Automatically calculates scores (Fit, Pricing, Compliance, Documentation) based on extracted claims.
+*   **Synthesize**: Drafts the final tech advisory board recommendations, pros, cons, and tradeoffs.
+*   **Done**: Saves the briefing to database caches and terminates.
+
+### 2. Hybrid SQLite / PostgreSQL Adapter (Worker Threads)
+To support both zero-config local runs and standard cloud database deployments (Render, Supabase) without altering backend queries, StackScout features a custom **synchronous database adapter** in `db.ts`:
+*   **SQLite Mode**: Uses `better-sqlite3` in WAL (Write-Ahead Logging) mode for concurrent read/write speed.
+*   **PostgreSQL Mode**: Boots a background Node.js **Worker Thread** (`worker.ts`) and utilizes `SharedArrayBuffer` with `Atomics.wait` to bridge asynchronous pg queries into a synchronous API matching the sqlite `.prepare(sql).run() / .get() / .all()` syntax.
+*   **Automatic Query Mapping**: Remaps SQLite SQL statements (like `INSERT OR REPLACE`) into standard PostgreSQL `ON CONFLICT DO UPDATE` queries dynamically.
+
+---
+
+## 🎨 UI/UX Design System (Dashboard Layout)
+
+The UI is inspired by modern real-time crypto dashboards, offering a light-themed, high-contrast, data-rich interface built with Tailwind CSS and Framer Motion:
+
+*   **Header Navigation**: A glassmorphic top bar containing pill tabs (Overview, Reports, Watchlist), notifications bell with pulsing indicators, and a Premium profile badge.
+*   **Sparkline Widgets**: Four top statistics cards displaying **Total Crawler Runs**, **Live Watchlist Targets**, **Average Latency**, and **Credit Efficiency** with custom SVG trendline graphs and percentage indicators.
+*   **Procurement Donut Gauge**: A half-circle gauge displaying the grounded crawl quality index (percentage of vendor claims with validated URLs) using an animated pointer needle.
+*   **Git-Style Pricing Deltas**: The watchlist page uses line-by-line red (`-` deleted) and green (`+` added) diff blocks to visualize pricing drift on watched pages.
+*   **Evidence Drawer**: Clicking citation icons slide out a right-side drawer containing the exact raw web text extracted from source URLs to guarantee grounded validation.
 
 ---
 
 ## ⚙️ Environment Configuration
 
-### Backend Setup
-Create a file named `backend/.env` containing:
+### Backend Setup (`backend/.env`)
+Create a file named `backend/.env` with the following parameters:
 
 ```env
 PORT=3001
 
-# API Credentials (required for Live/Online mode)
+# API Credentials (required for live crawls)
 CONTEXT_DEV_API_KEY=your_context_dev_api_key_here
 GEMINI_API_KEY=your_gemini_api_key_here
 
-# LLM Config
+# LLM Selection
 LLM_PROVIDER=gemini
+GEMINI_MODEL=gemini-2.5-flash-lite
 
-# Mocks Configuration (set to true to run offline without spending credits)
+# Mocks (set to true to run offline without spending credits)
 MOCK_CONTEXT=false
 MOCK_LLM=false
 
-# cron Watch Scheduling (Default: runs checks every 6 hours)
+# Chron Watch Scheduler (default: runs checks every 6 hours)
 WATCH_CRON=0 */6 * * *
+
+# Database Mode (sqlite or postgres)
+DB_MODE=sqlite
+
+# If DB_MODE=postgres:
+# DATABASE_URL=postgresql://username:password@localhost:5432/stackscout
+# Or individual fields:
+# PGHOST=localhost
+# PGPORT=5432
+# PGUSER=postgres
+# PGPASSWORD=postgres
+# PGDATABASE=stackscout
 ```
 
-### Frontend Setup
-Create a file named `frontend/.env` containing:
+### Frontend Setup (`frontend/.env`)
+Create a file named `frontend/.env` with:
 
 ```env
 VITE_API_BASE=http://localhost:3001
 VITE_MOCK=false
 ```
 
-*Note: Setting `VITE_MOCK=true` makes the frontend run entirely in-memory offline, replaying a pre-recorded mock run.*
-
 ---
 
 ## 🏁 Getting Started
 
-### 1. Install Workspace Dependencies
-From the workspace root directory (`d:\Dhrishti`), run the script to install dependencies for both the frontend and backend projects:
+### 1. Install Dependencies
+From the workspace root directory, install npm packages for both sub-projects:
 ```bash
 npm run install:all
 ```
 
-### 2. Seed the Database
-Run the seeder script to reset your SQLite tables and pre-populate them with complete, ready-to-view demo reports and price-monitoring watches (automatically executes in mock-safeguarded mode to protect your API credits):
+### 2. Seed Demo Data
+Pre-populate your database with pre-recorded reports, logs, and watchlist subscriptions (automatically forces mocks to safeguard your API credits):
 ```bash
 npm run seed
 ```
 
 ### 3. Launch Development Servers
-Launch both dev servers concurrently from the project root:
+Start both the Express API and Vite React server concurrently:
 ```bash
 npm run dev
 ```
-
-This will start:
-- **Frontend client** at [http://localhost:5173/](http://localhost:5173/)
-- **Backend API server** at [http://localhost:3001/](http://localhost:3001/)
-
-*(If port `5173` is occupied, Vite will automatically select `5174` or `5175`. The backend's dynamic CORS middleware will automatically allow it.)*
+- **Frontend Panel**: [http://localhost:5173/](http://localhost:5173/)
+- **Backend API**: [http://localhost:3001/](http://localhost:3001/)
 
 ---
 
-## 🛡️ Budget & Credit Discipline
+## 🛡️ API Credit Discipline & Optimizations
 
-To protect your API credits and maintain production discipline, StackScout enforces:
-1. **Request Throttling**: A custom rate-limiter enqueues Context.dev scrapes with a maximum concurrency of 2 and a minimum delay of 3000ms.
-2. **Scraper Cache (`page_cache` table)**: Raw scraped page contents are cached for **1 day**. Re-running a research query on the same vendor utilizes local cache records instead of spending scrape credits.
-3. **Brand Cache (`brand_cache` table)**: Brand palettes, logos, and fonts are cached for **30 days** (since brand guidelines rarely change), saving you 10 credits per domain lookup.
-4. **Limits**: Automatically constrains searches to a maximum of 6 candidates and 8 pages scraped per vendor.
-5. **Backoff Retries**: Automatically retries Context.dev requests that return `429` (Rate Limited) or `5xx` (Server Error) status codes using exponential backoff.
+StackScout is built to be extremely credit-efficient, using cache tables to avoid redundant web scraping fees:
+*   **Scraper Cache (`page_cache`)**: Raw scraped page Markdowns are cached for **1 day**. Re-running searches on the same candidates pulls from the database instead of triggering a new crawl.
+*   **Brand Cache (`brand_cache`)**: Log urls, palettes, and typography guidelines are cached for **30 days** (since brand guidelines rarely change).
+*   **Rate Limiter**: Limits Context.dev requests to a maximum concurrency of 2 and applies a 3000ms delay between fetches to prevent rate-limiting bans.
+*   **Exponential Backoff**: Automatically handles `429` (Too Many Requests) or `5xx` errors by retrying queries with backoff intervals.

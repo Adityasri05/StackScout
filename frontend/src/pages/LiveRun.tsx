@@ -54,6 +54,23 @@ export default function LiveRun() {
       (event) => {
         setEvents(prev => [...prev, event]);
         
+        const stageStr = event.stage as string;
+        if (stageStr === 'error') {
+          setStatus('failed');
+          setErrorMessage(event.message);
+          toast('Research pipeline execution encountered an error.', 'error');
+          return;
+        }
+
+        if (stageStr === 'done') {
+          setStatus('done');
+          if (event.data?.reportId) {
+            setReportId(event.data.reportId);
+          }
+          toast('Autonomous research complete!', 'success');
+          return;
+        }
+
         if (event.stage && event.stage !== 'done' && event.stage !== 'error') {
           setCurrentStage(event.stage);
         }

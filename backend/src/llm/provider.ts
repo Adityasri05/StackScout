@@ -12,7 +12,13 @@ export class GeminiProvider implements LLMProvider {
   }
 
   async complete(system: string, user: string, jsonSchema?: any): Promise<string> {
-    const modelName = process.env.GEMINI_MODEL || 'gemini-2.5-flash-lite';
+    let modelName = process.env.GEMINI_MODEL || 'gemini-2.5-flash-lite';
+    
+    // Automatically redirect unsupported v1beta model configurations to gemini-2.5-flash-lite
+    if (modelName.includes('gemini-1.5-flash') || modelName.includes('1.5')) {
+      modelName = 'gemini-2.5-flash-lite';
+    }
+
     const model = this.genAI.getGenerativeModel({
       model: modelName,
       systemInstruction: system,

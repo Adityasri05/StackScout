@@ -257,26 +257,49 @@ export class ContextService {
       this.incrementCredits(jobId, 'brand');
       console.log(`[ContextService] Brand Intelligence lookup for domain: ${domain}`);
 
-      const apiEndpoint = `${this.baseUrl}/brand/retrieve?domain=${encodeURIComponent(domain)}`;
-      const res = await fetchWithRetry(apiEndpoint, {
-        headers: { 'Authorization': `Bearer ${this.apiKey}` }
-      });
+      try {
+        const apiEndpoint = `${this.baseUrl}/brand/retrieve?domain=${encodeURIComponent(domain)}`;
+        const res = await fetchWithRetry(apiEndpoint, {
+          headers: { 'Authorization': `Bearer ${this.apiKey}` }
+        });
 
-      if (!res.ok) {
-        throw new Error(`Context.dev brand lookup failed with status ${res.status}: ${await res.text()}`);
+        if (!res.ok) {
+          throw new Error(`Context.dev brand lookup failed with status ${res.status}: ${await res.text()}`);
+        }
+
+        const data = await res.json() as any;
+        const brandInfo: BrandInfo = {
+          logoUrl: data.logo?.url || '',
+          primaryColor: data.theme?.primaryColor || '#6C7CFF',
+          colors: data.theme?.palette || ['#6C7CFF'],
+          fonts: data.theme?.fonts || ['Inter', 'sans-serif'],
+          company_metadata: data.metadata || {}
+        };
+
+        this.cacheBrand(domain, brandInfo);
+        return brandInfo;
+      } catch (err: any) {
+        console.warn(`[ContextService] Brand Intelligence lookup failed for domain: ${domain} (${err.message || err}). Falling back to mock brand data.`);
+        
+        // Fallback to local mock fixture file if available, or return default mock
+        const fixtureName = domain.replace(/\.[a-z]+$/, '');
+        const filePath = path.resolve(__dirname, `../../fixtures/${fixtureName}_brand.json`);
+        if (fs.existsSync(filePath)) {
+          const brandData = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+          this.cacheBrand(domain, brandData);
+          return brandData;
+        }
+
+        const fallback: BrandInfo = {
+          logoUrl: `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236C7CFF' stroke-width='2'><circle cx='12' cy='12' r='10'/></svg>`,
+          primaryColor: '#6C7CFF',
+          colors: ['#6C7CFF', '#1A2030'],
+          fonts: ['Inter', 'sans-serif'],
+          company_metadata: { name: domain.split('.')[0] }
+        };
+        this.cacheBrand(domain, fallback);
+        return fallback;
       }
-
-      const data = await res.json() as any;
-      const brandInfo: BrandInfo = {
-        logoUrl: data.logo?.url || '',
-        primaryColor: data.theme?.primaryColor || '#6C7CFF',
-        colors: data.theme?.palette || ['#6C7CFF'],
-        fonts: data.theme?.fonts || ['Inter', 'sans-serif'],
-        company_metadata: data.metadata || {}
-      };
-
-      this.cacheBrand(domain, brandInfo);
-      return brandInfo;
     });
   }
 

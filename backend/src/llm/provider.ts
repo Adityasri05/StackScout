@@ -12,11 +12,11 @@ export class GeminiProvider implements LLMProvider {
   }
 
   async complete(system: string, user: string, jsonSchema?: any): Promise<string> {
-    let modelName = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+    let modelName = process.env.GEMINI_MODEL || 'gemini-flash-latest';
     
-    // Automatically default to gemini-2.5-flash if 1.5 or lite is configured
-    if (modelName.includes('gemini-1.5-flash') || modelName.includes('lite') || modelName.includes('1.5')) {
-      modelName = 'gemini-2.5-flash';
+    // Automatically default to gemini-flash-latest if 1.5, 2.5, or lite is configured
+    if (modelName.includes('gemini-1.5') || modelName.includes('gemini-2.5') || modelName.includes('lite') || modelName.includes('1.5')) {
+      modelName = 'gemini-flash-latest';
     }
 
     const tryGenerate = async (targetModel: string): Promise<string> => {
@@ -48,11 +48,11 @@ export class GeminiProvider implements LLMProvider {
     } catch (err: any) {
       const errStr = String(err).toLowerCase();
       
-      // If the target model was not found/available, try standard gemini-2.5-flash
-      if ((errStr.includes('not found') || errStr.includes('404') || errStr.includes('longer available')) && modelName !== 'gemini-2.5-flash') {
-        console.warn(`[GeminiProvider] Model ${modelName} not found/available. Retrying with gemini-2.5-flash...`);
+      // If the target model was not found/available, try standard gemini-flash-latest
+      if ((errStr.includes('not found') || errStr.includes('404') || errStr.includes('longer available')) && modelName !== 'gemini-flash-latest') {
+        console.warn(`[GeminiProvider] Model ${modelName} not found/available. Retrying with gemini-flash-latest...`);
         try {
-          return await tryGenerate('gemini-2.5-flash');
+          return await tryGenerate('gemini-flash-latest');
         } catch (retryErr: any) {
           err = retryErr;
         }

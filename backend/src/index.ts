@@ -21,7 +21,11 @@ const PORT = process.env.PORT || 3001;
 app.use(cors({
   origin: (origin, callback) => {
     if (!origin) return callback(null, true);
-    if (/^http:\/\/localhost:\d+$/.test(origin) || /^http:\/\/127\.0\.0\.1:\d+$/.test(origin)) {
+    if (
+      /^http:\/\/localhost:\d+$/.test(origin) || 
+      /^http:\/\/127\.0\.0\.1:\d+$/.test(origin) ||
+      /\.railway\.app$/.test(origin)
+    ) {
       return callback(null, true);
     }
     callback(new Error('Not allowed by CORS'));

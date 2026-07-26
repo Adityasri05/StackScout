@@ -2,6 +2,9 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import cron from 'node-cron';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import fs from 'fs';
 import db from './db/db.js';
 import healthRouter from './routes/health.js';
 import researchRouter from './routes/research.js';
@@ -38,6 +41,24 @@ app.use('/api/health', healthRouter);
 app.use('/api/research', researchRouter);
 app.use('/api/reports', reportsRouter);
 app.use('/api/watches', watchesRouter);
+
+// Resolve directory paths in ES Modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Serve static frontend assets if they exist (Production serving)
+const frontendDistPath = path.resolve(__dirname, '../../frontend/dist');
+if (fs.existsSync(frontendDistPath)) {
+  console.log(`[Static] Serving frontend static assets from: ${frontendDistPath}`);
+  app.use(express.static(frontendDistPath));
+  
+  // Handle SPA client-side routing
+  app.get('*', (req, res) => {
+    if (!req.path.startsWith('/api/')) {
+      res.sendFile(path.join(frontendDistPath, 'index.html'));
+    }
+  });
+}
 
 // Global Error Handler
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {

@@ -1,7 +1,7 @@
 import { Report, Watch, WatchChange, Job, PipelineEvent } from './types.js';
 import { MOCK_REPORT, MOCK_WATCHES, MOCK_WATCH_CHANGES, simulateSSE } from './mock.js';
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3001';
+const API_BASE = import.meta.env.VITE_API_BASE || (import.meta.env.PROD ? '' : 'http://localhost:3001');
 const IS_MOCK = import.meta.env.VITE_MOCK === 'true';
 
 // Mock Memory State Store for interactive Mock Mode

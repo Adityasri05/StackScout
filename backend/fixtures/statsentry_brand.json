@@ -1,0 +1,12 @@
+{
+  "logoUrl": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23F59E0B' stroke-width='2'><path d='M18 20V10'/><path d='M12 20V4'/><path d='M6 20v-6'/></svg>",
+  "primaryColor": "#F59E0B",
+  "colors": ["#F59E0B", "#78350F", "#D97706"],
+  "fonts": ["Geist", "monospace"],
+  "company_metadata": {
+    "name": "StatSentry",
+    "description": "High-fidelity monitoring, network diagnostics, and incident management workflows.",
+    "founded": 2019,
+    "size": "100-250"
+  }
+}

@@ -12,16 +12,16 @@ export class GeminiProvider implements LLMProvider {
   }
 
   async complete(system: string, user: string, jsonSchema?: any): Promise<string> {
-    let modelName = process.env.GEMINI_MODEL || 'gemini-2.5-flash-lite';
+    let modelName = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
     
-    // Automatically redirect unsupported v1beta model configurations to gemini-2.5-flash-lite
-    if (modelName.includes('gemini-1.5-flash') || modelName.includes('1.5')) {
-      modelName = 'gemini-2.5-flash-lite';
+    // Automatically default to gemini-2.5-flash if 1.5 or lite is configured
+    if (modelName.includes('gemini-1.5-flash') || modelName.includes('lite') || modelName.includes('1.5')) {
+      modelName = 'gemini-2.5-flash';
     }
 
-    try {
+    const tryGenerate = async (targetModel: string): Promise<string> => {
       const model = this.genAI.getGenerativeModel({
-        model: modelName,
+        model: targetModel,
         systemInstruction: system,
       });
 
@@ -41,8 +41,24 @@ export class GeminiProvider implements LLMProvider {
         throw new Error('Empty response from Gemini');
       }
       return text;
+    };
+
+    try {
+      return await tryGenerate(modelName);
     } catch (err: any) {
       const errStr = String(err).toLowerCase();
+      
+      // If the target model was not found/available, try standard gemini-2.5-flash
+      if ((errStr.includes('not found') || errStr.includes('404') || errStr.includes('longer available')) && modelName !== 'gemini-2.5-flash') {
+        console.warn(`[GeminiProvider] Model ${modelName} not found/available. Retrying with gemini-2.5-flash...`);
+        try {
+          return await tryGenerate('gemini-2.5-flash');
+        } catch (retryErr: any) {
+          err = retryErr;
+        }
+      }
+
+      // Check for rate limits, quota limits, or API key errors
       if (errStr.includes('429') || errStr.includes('quota') || errStr.includes('api key') || errStr.includes('api_key') || errStr.includes('403') || errStr.includes('not found') || errStr.includes('404')) {
         console.warn(`[GeminiProvider] Quota Exceeded or API Key error (${err.message || err}). Falling back to local Mock LLM data to ensure a successful demo run.`);
         const mock = new MockLLMProvider();

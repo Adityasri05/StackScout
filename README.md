@@ -148,3 +148,20 @@ StackScout is built to be extremely credit-efficient, using cache tables to avoi
 *   **Brand Cache (`brand_cache`)**: Log urls, palettes, and typography guidelines are cached for **30 days** (since brand guidelines rarely change).
 *   **Rate Limiter**: Limits Context.dev requests to a maximum concurrency of 2 and applies a 3000ms delay between fetches to prevent rate-limiting bans.
 *   **Exponential Backoff**: Automatically handles `429` (Too Many Requests) or `5xx` errors by retrying queries with backoff intervals.
+
+---
+
+## ⚡ Vercel Deployment (Frontend)
+
+To deploy the StackScout frontend onto **Vercel** as a high-speed Edge CDN application, follow these simple steps:
+
+1. **Import the Project**: Link your GitHub repository (`Adityasri05/StackScout`) to your Vercel Account.
+2. **Configure Settings**:
+   - **Root Directory**: `frontend`
+   - **Build Command**: `npm run build`
+   - **Output Directory**: `dist`
+   - **Framework Preset**: `Vite`
+3. **Add Environment Variables**:
+   - `VITE_API_BASE`: Set this to your deployed backend URL (e.g., `https://stackscout-production.up.railway.app` or your Render service domain).
+   - `VITE_MOCK`: `false`
+4. **Deploy**: Click **Deploy**. Vercel will build the frontend assets, and our preconfigured `frontend/vercel.json` will handle SPA redirects on page reloads automatically!

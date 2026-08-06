@@ -1,5 +1,6 @@
 # StackScout 🕵️‍♂️ — Autonomous Software Procurement & Decision Agent
 
+
 **StackScout** is an autonomous vendor-research and decision-support agent built for the **Context.dev Challenge**. 
 
 Describe your software needs in plain English — *"We're a 10-person startup and need an uptime monitoring tool under $50/month with EU data residency and Slack alerts"* — and StackScout dispatches an autonomous multi-stage agent pipeline that crawls public web pages, extracts structured vendor dossiers, validates feature compliance, and compiles a McKinsey-grade comparative decision brief.

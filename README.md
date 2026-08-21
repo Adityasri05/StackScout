@@ -4,13 +4,17 @@
 
 Describe your software needs in plain English — *"We're a 10-person startup and need an uptime monitoring tool under $50/month with EU data residency and Slack alerts"* — and StackScout dispatches an autonomous multi-stage agent pipeline that crawls public web pages, extracts structured vendor dossiers, validates feature compliance, and compiles a McKinsey-grade comparative decision brief.
 
+
 ---
+
 
 ## 🏛️ System Architecture & Data Flow
 
 StackScout is built around a decoupled architecture separating a real-time event-driven Node.js backend from a reactive React single-page dashboard.
 
+
 ```mermaid
+
 flowchart TD
     %% User input flow
     A[User Request / Plain English Query] -->|POST /api/research| B[Express API Router]
@@ -38,6 +42,7 @@ flowchart TD
     %% SSE Logs Streaming
     D -->|Publish PipelineEvent| Bus[Event Bus]
     Bus -->|Server-Sent Events SSE| Front[Framer-Motion Console UI]
+
 ```
 
 ### 1. The 9-Stage Agent Pipeline
@@ -50,6 +55,7 @@ flowchart TD
 *   **Score**: Automatically calculates scores (Fit, Pricing, Compliance, Documentation) based on extracted claims.
 *   **Synthesize**: Drafts the final tech advisory board recommendations, pros, cons, and tradeoffs.
 *   **Done**: Saves the briefing to database caches and terminates.
+
 
 ### 2. Hybrid SQLite / PostgreSQL Adapter (Worker Threads)
 To support both zero-config local runs and standard cloud database deployments (Render, Supabase) without altering backend queries, StackScout features a custom **synchronous database adapter** in `db.ts`:
@@ -151,7 +157,9 @@ StackScout is built to be extremely credit-efficient, using cache tables to avoi
 *   **Rate Limiter**: Limits Context.dev requests to a maximum concurrency of 2 and applies a 3000ms delay between fetches to prevent rate-limiting bans.
 *   **Exponential Backoff**: Automatically handles `429` (Too Many Requests) or `5xx` errors by retrying queries with backoff intervals.
 
+
 ---
+
 
 ## ⚡ Vercel Deployment (Frontend)
 

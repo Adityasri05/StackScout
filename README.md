@@ -152,9 +152,7 @@ StackScout is built to be extremely credit-efficient, using cache tables to avoi
 *   **Rate Limiter**: Limits Context.dev requests to a maximum concurrency of 2 and applies a 3000ms delay between fetches to prevent rate-limiting bans.
 *   **Exponential Backoff**: Automatically handles `429` (Too Many Requests) or `5xx` errors by retrying queries with backoff intervals.
 
-
 ---
-
 
 ## ⚡ Vercel Deployment (Frontend)
 

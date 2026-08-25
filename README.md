@@ -60,9 +60,7 @@ To support both zero-config local runs and standard cloud database deployments (
 *   **PostgreSQL Mode**: Boots a background Node.js **Worker Thread** (`worker.ts`) and utilizes `SharedArrayBuffer` with `Atomics.wait` to bridge asynchronous pg queries into a synchronous API matching the sqlite `.prepare(sql).run() / .get() / .all()` syntax.
 *   **Automatic Query Mapping**: Remaps SQLite SQL statements (like `INSERT OR REPLACE`) into standard PostgreSQL `ON CONFLICT DO UPDATE` queries dynamically.
 
-
 ---
-
 
 ## 🎨 UI/UX Design System (Dashboard Layout)
 
